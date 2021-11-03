@@ -4,8 +4,10 @@ enum
 {
 	USB_ITF_KEYBOARD = 0,
 	USB_ITF_MOUSE,
+//	USB_ITF_HID_GENERIC,
 	USB_ITF_CDC,
 	USB_ITF_CDC2,
+	USB_ITF_VENDOR,
 	USB_ITF_MAX,
 };
 
@@ -19,13 +21,16 @@ enum
 
 #define CFG_TUD_ENDPOINT0_SIZE		64
 
-#define CFG_TUD_HID					2
+#define CFG_TUD_HID					2//3
 #define CFG_TUD_CDC					1
 #define CFG_TUD_MSC					0
 #define CFG_TUD_MIDI				0
-#define CFG_TUD_VENDOR				0
+#define CFG_TUD_VENDOR				1
 
 #define CFG_TUD_HID_EP_BUFSIZE		8
 
 #define CFG_TUD_CDC_RX_BUFSIZE		256
 #define CFG_TUD_CDC_TX_BUFSIZE		256
+
+#define CFG_TUD_VENDOR_RX_BUFSIZE	64
+#define CFG_TUD_VENDOR_TX_BUFSIZE	64

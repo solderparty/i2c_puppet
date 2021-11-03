@@ -1,5 +1,6 @@
 #include "usb.h"
 
+#include "backlight.h"
 #include "keyboard.h"
 #include "touchpad.h"
 #include "reg.h"
@@ -16,6 +17,9 @@ static struct
 	mutex_t mutex;
 	bool mouse_moved;
 	uint8_t mouse_btn;
+
+	uint8_t write_buffer[2];
+	uint8_t write_len;
 } self;
 
 // TODO: Should mods always be sent?
@@ -45,7 +49,12 @@ static int64_t timer_task(alarm_id_t id, void *user_data)
 static void key_cb(char key, enum key_state state)
 {
 	if (tud_hid_n_ready(USB_ITF_KEYBOARD) && reg_is_bit_set(REG_ID_CF2, CF2_USB_KEYB_ON)) {
-		uint8_t const conv_table[128][2] =  { HID_ASCII_TO_KEYCODE };
+		uint8_t conv_table[128][2]		= { HID_ASCII_TO_KEYCODE };
+		conv_table['\n'][1]				= HID_KEY_ENTER; // Fixup: Enter instead of Return
+		conv_table[KEY_JOY_UP][1]		= HID_KEY_ARROW_UP;
+		conv_table[KEY_JOY_DOWN][1]		= HID_KEY_ARROW_DOWN;
+		conv_table[KEY_JOY_LEFT][1]		= HID_KEY_ARROW_LEFT;
+		conv_table[KEY_JOY_RIGHT][1]	= HID_KEY_ARROW_RIGHT;
 
 		uint8_t keycode[6] = { 0 };
 		uint8_t modifier   = 0;
@@ -55,13 +64,10 @@ static void key_cb(char key, enum key_state state)
 				modifier = KEYBOARD_MODIFIER_LEFTSHIFT;
 
 			keycode[0] = conv_table[(int)key][1];
-
-			// Fixup: Enter instead of Return
-			if (key == '\n')
-				keycode[0] = HID_KEY_ENTER;
 		}
 
-		tud_hid_n_keyboard_report(USB_ITF_KEYBOARD, 0, modifier, keycode);
+		if (state != KEY_STATE_HOLD)
+			tud_hid_n_keyboard_report(USB_ITF_KEYBOARD, 0, modifier, keycode);
 	}
 
 	if (tud_hid_n_ready(USB_ITF_MOUSE) && reg_is_bit_set(REG_ID_CF2, CF2_USB_MOUSE_ON)) {
@@ -99,7 +105,7 @@ static struct touch_callback touch_callback =
 	.func = touch_cb
 };
 
-uint16_t tud_hid_get_report_cb(uint8_t itf, uint8_t report_id, hid_report_type_t report_type, uint8_t* buffer, uint16_t reqlen)
+uint16_t tud_hid_get_report_cb(uint8_t itf, uint8_t report_id, hid_report_type_t report_type, uint8_t *buffer, uint16_t reqlen)
 {
 	// TODO not Implemented
 	(void)itf;
@@ -108,21 +114,63 @@ uint16_t tud_hid_get_report_cb(uint8_t itf, uint8_t report_id, hid_report_type_t
 	(void)buffer;
 	(void)reqlen;
 
-	printf("%s: itf: %d, report id: %d, type: %d, len: %d\r\n", __func__, itf, report_id, report_type, reqlen);
-
 	return 0;
+
+//	if (itf != USB_ITF_HID_GENERIC)
+//		return 0;
+
+//	printf("%s: itf: %d, report id: %d, type: %d, len: %d\r\n", __func__, itf, report_id, report_type, reqlen);
+
+//	memcpy(buffer, self.write_buffer, self.write_len);
+
+//	return self.write_len;
 }
 
-void tud_hid_set_report_cb(uint8_t itf, uint8_t report_id, hid_report_type_t report_type, uint8_t const* buffer, uint16_t bufsize)
+void tud_hid_set_report_cb(uint8_t itf, uint8_t report_id, hid_report_type_t report_type, uint8_t const *buffer, uint16_t len)
 {
 	// TODO set LED based on CAPLOCK, NUMLOCK etc...
 	(void)itf;
 	(void)report_id;
 	(void)report_type;
 	(void)buffer;
-	(void)bufsize;
+	(void)len;
 
-	printf("%s: itf: %d, report id: %d, type: %d, size: %d\r\n", __func__, itf, report_id, report_type, bufsize);
+//	if (itf != USB_ITF_HID_GENERIC)
+//		return;
+
+//	printf("%s: itf: %d, report id: %d, type: %d, buff: %02X %02X %02X len: %d\r\n", __func__, itf, report_id, report_type, buffer[0], buffer[1], buffer[2], len);
+
+//	if (len < 1)
+//		return;
+
+//	const bool is_write = (buffer[0] & PACKET_WRITE_MASK);
+//	const uint8_t reg = (buffer[0] & ~PACKET_WRITE_MASK);
+
+//	printf("%s: read complete, is_write: %d, reg: 0x%02X\r\n", __func__, is_write, reg);
+
+//	if (is_write && (len < 2))
+//		return;
+
+//	printf("%s: data: 0x%02X\r\n", __func__, buffer[1]);
+
+//	reg_process_packet(buffer[0], buffer[1], (uint8_t*)&self.write_buffer, &self.write_len);
+
+//	printf("%s: write_buff: %02X %02X, len: %d\r\n", __func__, self.write_buffer[0], self.write_buffer[1], self.write_len);
+
+//	tud_hid_n_report(itf, report_id, self.write_buffer, self.write_len);
+}
+
+void tud_vendor_rx_cb(uint8_t itf)
+{
+	printf("%s: itf: %d, avail: %d\r\n", __func__, itf, tud_vendor_n_available(itf));
+
+	uint8_t buff[64] = { 0 };
+	tud_vendor_n_read(itf, buff, 64);
+//	printf("%s: %02X %02X %02X\r\n", __func__, buff[0], buff[1], buff[2]);
+
+	reg_process_packet(buff[0], buff[1], self.write_buffer, &self.write_len);
+
+	tud_vendor_n_write(itf, self.write_buffer, self.write_len);
 }
 
 void usb_init(void)
@@ -133,7 +181,7 @@ void usb_init(void)
 
 	touchpad_add_touch_callback(&touch_callback);
 
-	// create a new interrupt to call tud_task, and trigger that irq from a timer
+	// create a new interrupt that calls tud_task, and trigger that interrupt from a timer
 	irq_set_exclusive_handler(USB_LOW_PRIORITY_IRQ, low_priority_worker_irq);
 	irq_set_enabled(USB_LOW_PRIORITY_IRQ, true);
 

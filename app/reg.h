@@ -25,8 +25,8 @@ enum reg_id
 	REG_ID_ADR = 0x12, // i2c puppet address
 	REG_ID_IND = 0x13, // interrupt pin assert duration
 	REG_ID_CF2 = 0x14, // config 2
-	REG_ID_TOX = 0x15, // touch delta x
-	REG_ID_TOY = 0x16, // touch delta y
+	REG_ID_TOX = 0x15, // touch delta x since last read, at most (-128 to 127)
+	REG_ID_TOY = 0x16, // touch delta y since last read, at most (-128 to 127)
 
 	REG_ID_LAST,
 };
@@ -65,6 +65,10 @@ enum reg_id
 #define PUD_UP				1
 
 #define VER_VAL				((VERSION_MAJOR << 4) | (VERSION_MINOR << 0))
+
+#define PACKET_WRITE_MASK	(1 << 7)
+
+void reg_process_packet(uint8_t in_reg, uint8_t in_data, uint8_t *out_buffer, uint8_t *out_len);
 
 uint8_t reg_get_value(enum reg_id reg);
 void reg_set_value(enum reg_id reg, uint8_t value);

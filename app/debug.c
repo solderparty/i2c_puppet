@@ -17,7 +17,7 @@
 
 static void key_cb(char key, enum key_state state)
 {
-	printf("key: 0x%02X/%d/%c, state: %d, bkl: %d\r\n", key, key, key, state, reg_get_value(REG_ID_BKL));
+	printf("key: 0x%02X/%d/%c, state: %d\r\n", key, key, key, state);
 }
 static struct key_callback key_callback =
 {
@@ -37,7 +37,7 @@ static struct key_lock_callback key_lock_callback =
 
 static void touch_cb(int8_t x, int8_t y)
 {
-	printf("%s: x: %d, y: %d !\r\n", __func__, x, y);
+//	printf("%s: x: %d, y: %d !\r\n", __func__, x, y);
 }
 static struct touch_callback touch_callback =
 {
@@ -105,7 +105,7 @@ void debug_init(void)
 {
 	stdio_init_all();
 
-	stdio_set_driver_enabled(&stdio_usb, true);
+//	stdio_set_driver_enabled(&stdio_usb, true);
 
 	printf("I2C Puppet SW v%d.%d\r\n", VERSION_MAJOR, VERSION_MINOR);
 

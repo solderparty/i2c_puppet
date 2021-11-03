@@ -1,13 +1,17 @@
 #include <tusb.h>
 
-#define CONFIG_TOTAL_LEN		(TUD_CONFIG_DESC_LEN + TUD_HID_DESC_LEN + TUD_HID_DESC_LEN + TUD_CDC_DESC_LEN)
+#define CONFIG_TOTAL_LEN		(TUD_CONFIG_DESC_LEN + TUD_HID_DESC_LEN + TUD_HID_DESC_LEN /*+ TUD_HID_DESC_LEN*/ + TUD_VENDOR_DESC_LEN + TUD_CDC_DESC_LEN)
 
 #define EPNUM_HID_KEYBOARD		0x81
 #define EPNUM_HID_MOUSE			0x82
+#define EPNUM_HID_GENERIC		0x83
 
-#define EPNUM_CDC_CMD			0x83
-#define EPNUM_CDC_IN			0x84
-#define EPNUM_CDC_OUT			0x02
+#define EPNUM_VENDOR_IN			0x84
+#define EPNUM_VENDOR_OUT		0x02
+
+#define EPNUM_CDC_CMD			0x85
+#define EPNUM_CDC_IN			0x86
+#define EPNUM_CDC_OUT			0x03
 
 #define CDC_CMD_MAX_SIZE		8
 #define CDC_IN_OUT_MAX_SIZE		64
@@ -22,7 +26,8 @@ char const *string_descriptors[] =
 	"123456",						// 3: Serials, should use chip ID
 	"Keyboard Interface",			// 4: Interface 1 String
 	"Mouse Interface",				// 5: Interface 2 String
-	"Board CDC",					// 6: Interface 3 String
+	"HID Interface",				// 6: Interface 3 String
+	"CDC Interface",				// 7: Interface 4 String
 };
 
 tusb_desc_device_t const device_descriptor =
@@ -56,14 +61,23 @@ uint8_t const hid_mouse_descriptor[] =
 	TUD_HID_REPORT_DESC_MOUSE()
 };
 
+//uint8_t const hid_generic_descriptor[] =
+//{
+//	TUD_HID_REPORT_DESC_GENERIC_INOUT(CFG_TUD_HID_EP_BUFSIZE)
+//};
+
 uint8_t const config_descriptor[] =
 {
 	TUD_CONFIG_DESCRIPTOR(1, USB_ITF_MAX, 0, CONFIG_TOTAL_LEN, TUSB_DESC_CONFIG_ATT_REMOTE_WAKEUP, 100),
 
-	TUD_HID_DESCRIPTOR(USB_ITF_KEYBOARD, 4, HID_ITF_PROTOCOL_NONE, sizeof(hid_keyboard_descriptor), EPNUM_HID_KEYBOARD, CFG_TUD_HID_EP_BUFSIZE, 10),
-	TUD_HID_DESCRIPTOR(USB_ITF_MOUSE,    5, HID_ITF_PROTOCOL_NONE, sizeof(hid_mouse_descriptor),    EPNUM_HID_MOUSE,    CFG_TUD_HID_EP_BUFSIZE, 10),
+	TUD_HID_DESCRIPTOR(USB_ITF_KEYBOARD,    4, HID_ITF_PROTOCOL_NONE, sizeof(hid_keyboard_descriptor), EPNUM_HID_KEYBOARD, CFG_TUD_HID_EP_BUFSIZE, 10),
+	TUD_HID_DESCRIPTOR(USB_ITF_MOUSE,       5, HID_ITF_PROTOCOL_NONE, sizeof(hid_mouse_descriptor),    EPNUM_HID_MOUSE,    CFG_TUD_HID_EP_BUFSIZE, 10),
 
-	TUD_CDC_DESCRIPTOR(USB_ITF_CDC, 6, EPNUM_CDC_CMD, CDC_CMD_MAX_SIZE, EPNUM_CDC_OUT, EPNUM_CDC_IN, CDC_IN_OUT_MAX_SIZE),
+//	TUD_HID_DESCRIPTOR(USB_ITF_HID_GENERIC, 6, HID_ITF_PROTOCOL_NONE, sizeof(hid_generic_descriptor),  EPNUM_HID_GENERIC,  CFG_TUD_HID_EP_BUFSIZE, 10),
+
+	TUD_VENDOR_DESCRIPTOR(USB_ITF_VENDOR,   7, EPNUM_VENDOR_OUT, EPNUM_VENDOR_IN, CFG_TUD_VENDOR_EPSIZE),
+
+	TUD_CDC_DESCRIPTOR(USB_ITF_CDC, 7, EPNUM_CDC_CMD, CDC_CMD_MAX_SIZE, EPNUM_CDC_OUT, EPNUM_CDC_IN, CDC_IN_OUT_MAX_SIZE),
 };
 
 uint8_t const *tud_descriptor_device_cb(void)
@@ -78,6 +92,9 @@ uint8_t const *tud_hid_descriptor_report_cb(uint8_t itf)
 
 	if (itf == USB_ITF_MOUSE)
 		return hid_mouse_descriptor;
+
+//	if (itf == USB_ITF_HID_GENERIC)
+//		return hid_generic_descriptor;
 
 	return NULL;
 }

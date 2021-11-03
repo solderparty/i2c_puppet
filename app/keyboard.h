@@ -11,6 +11,17 @@ enum key_state
 	KEY_STATE_RELEASED,
 };
 
+enum key_mod
+{
+	KEY_MOD_ID_NONE = 0,
+	KEY_MOD_ID_SYM,
+	KEY_MOD_ID_ALT,
+	KEY_MOD_ID_SHL,
+	KEY_MOD_ID_SHR,
+
+	KEY_MOD_ID_LAST,
+};
+
 #define KEY_JOY_UP		0x01
 #define KEY_JOY_DOWN	0x02
 #define KEY_JOY_LEFT	0x03
@@ -26,8 +37,8 @@ enum key_state
 #define KEY_BTN_RIGHT2	0x12
 
 #define KEY_MOD_ALT		0x1A
-#define KEY_MOD_SHL		0x1B
-#define KEY_MOD_SHR		0x1C
+#define KEY_MOD_SHL		0x1B // Left Shift
+#define KEY_MOD_SHR		0x1C // Right Shift
 #define KEY_MOD_SYM		0x1D
 
 struct key_callback
@@ -42,7 +53,10 @@ struct key_lock_callback
 	struct key_lock_callback *next;
 };
 
-void keyboard_task(void);
+void keyboard_inject_event(char key, enum key_state state);
+
+bool keyboard_is_key_down(char key);
+bool keyboard_is_mod_on(enum key_mod mod);
 
 void keyboard_add_key_callback(struct key_callback *callback);
 void keyboard_add_lock_callback(struct key_lock_callback *callback);
