@@ -1,0 +1,4 @@
+# I2C Puppet devices
+
+# BBQ10KBD
+SUBSYSTEM=="usb", ATTR{idVendor}=="1209", ATTR{idProduct}=="b182", MODE:="0660", TAG+="uaccess"

@@ -22,10 +22,7 @@ static void key_cb(char key, enum key_state state)
 	busy_wait_ms(reg_get_value(REG_ID_IND));
 	gpio_put(PIN_INT, 1);
 }
-static struct key_callback key_callback =
-{
-	.func = key_cb
-};
+static struct key_callback key_callback = { .func = key_cb };
 
 static void key_lock_cb(bool caps_changed, bool num_changed)
 {
@@ -47,10 +44,7 @@ static void key_lock_cb(bool caps_changed, bool num_changed)
 		gpio_put(PIN_INT, 1);
 	}
 }
-static struct key_lock_callback key_lock_callback =
-{
-	.func = key_lock_cb
-};
+static struct key_lock_callback key_lock_callback = { .func = key_lock_cb };
 
 static void touch_cb(int8_t x, int8_t y)
 {
@@ -66,10 +60,7 @@ static void touch_cb(int8_t x, int8_t y)
 	busy_wait_ms(reg_get_value(REG_ID_IND));
 	gpio_put(PIN_INT, 1);
 }
-static struct touch_callback touch_callback =
-{
-	.func = touch_cb
-};
+static struct touch_callback touch_callback = { .func = touch_cb };
 
 static void gpioexp_cb(uint8_t gpio, uint8_t gpio_idx)
 {
@@ -85,10 +76,7 @@ static void gpioexp_cb(uint8_t gpio, uint8_t gpio_idx)
 	busy_wait_ms(reg_get_value(REG_ID_IND));
 	gpio_put(PIN_INT, 1);
 }
-static struct gpioexp_callback gpioexp_callback =
-{
-	.func = gpioexp_cb
-};
+static struct gpioexp_callback gpioexp_callback = { .func = gpioexp_cb };
 
 void interrupt_init(void)
 {

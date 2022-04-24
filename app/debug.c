@@ -19,10 +19,7 @@ static void key_cb(char key, enum key_state state)
 {
 	printf("key: 0x%02X/%d/%c, state: %d\r\n", key, key, key, state);
 }
-static struct key_callback key_callback =
-{
-	.func = key_cb
-};
+static struct key_callback key_callback = { .func = key_cb };
 
 static void key_lock_cb(bool caps_changed, bool num_changed)
 {
@@ -30,28 +27,19 @@ static void key_lock_cb(bool caps_changed, bool num_changed)
 		   caps_changed, keyboard_get_capslock(),
 		   num_changed, keyboard_get_numlock());
 }
-static struct key_lock_callback key_lock_callback =
-{
-	.func = key_lock_cb
-};
+static struct key_lock_callback key_lock_callback ={ .func = key_lock_cb };
 
 static void touch_cb(int8_t x, int8_t y)
 {
-//	printf("%s: x: %d, y: %d !\r\n", __func__, x, y);
+	printf("%s: x: %d, y: %d !\r\n", __func__, x, y);
 }
-static struct touch_callback touch_callback =
-{
-	.func = touch_cb
-};
+static struct touch_callback touch_callback = { .func = touch_cb };
 
 static void gpioexp_cb(uint8_t gpio, uint8_t gpio_idx)
 {
 	printf("gpioexp, pin: %d, idx: %d\r\n", gpio, gpio_idx);
 }
-static struct gpioexp_callback gpioexp_callback =
-{
-	.func = gpioexp_cb
-};
+static struct gpioexp_callback gpioexp_callback = { .func = gpioexp_cb };
 
 // copied from pico_stdio_usb in the SDK
 static void usb_out_chars(const char *buf, int length)
@@ -105,7 +93,7 @@ void debug_init(void)
 {
 	stdio_init_all();
 
-//	stdio_set_driver_enabled(&stdio_usb, true);
+	stdio_set_driver_enabled(&stdio_usb, true);
 
 	printf("I2C Puppet SW v%d.%d\r\n", VERSION_MAJOR, VERSION_MINOR);
 

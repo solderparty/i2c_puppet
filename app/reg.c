@@ -9,7 +9,7 @@
 #include "touchpad.h"
 
 #include <pico/stdlib.h>
-#include <RP2040.h>
+#include <RP2040.h> // TODO: When there's more than one RP chip, change this to be more generic
 #include <stdio.h>
 
 // We don't enable this by default cause it spams quite a lot
@@ -29,11 +29,7 @@ static void touch_cb(int8_t x, int8_t y)
 	self.regs[REG_ID_TOX] = MAX(INT8_MIN, MIN(dx, INT8_MAX));
 	self.regs[REG_ID_TOY] = MAX(INT8_MIN, MIN(dy, INT8_MAX));
 }
-static struct touch_callback touch_callback =
-{
-	.func = touch_cb
-};
-
+static struct touch_callback touch_callback = { .func = touch_cb };
 
 void reg_process_packet(uint8_t in_reg, uint8_t in_data, uint8_t *out_buffer, uint8_t *out_len)
 {

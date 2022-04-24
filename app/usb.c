@@ -22,7 +22,6 @@ static struct
 	uint8_t write_len;
 } self;
 
-// TODO: Should mods always be sent?
 // TODO: What about Ctrl?
 // TODO: What should L1, L2, R1, R2 do
 // TODO: Should touch send arrow keys as an option?
@@ -86,10 +85,7 @@ static void key_cb(char key, enum key_state state)
 		}
 	}
 }
-static struct key_callback key_callback =
-{
-	.func = key_cb
-};
+static struct key_callback key_callback = { .func = key_cb };
 
 static void touch_cb(int8_t x, int8_t y)
 {
@@ -100,10 +96,7 @@ static void touch_cb(int8_t x, int8_t y)
 
 	tud_hid_n_mouse_report(USB_ITF_MOUSE, 0, self.mouse_btn, x, y, 0, 0);
 }
-static struct touch_callback touch_callback =
-{
-	.func = touch_cb
-};
+static struct touch_callback touch_callback = { .func = touch_cb };
 
 uint16_t tud_hid_get_report_cb(uint8_t itf, uint8_t report_id, hid_report_type_t report_type, uint8_t *buffer, uint16_t reqlen)
 {
@@ -115,15 +108,6 @@ uint16_t tud_hid_get_report_cb(uint8_t itf, uint8_t report_id, hid_report_type_t
 	(void)reqlen;
 
 	return 0;
-
-//	if (itf != USB_ITF_HID_GENERIC)
-//		return 0;
-
-//	printf("%s: itf: %d, report id: %d, type: %d, len: %d\r\n", __func__, itf, report_id, report_type, reqlen);
-
-//	memcpy(buffer, self.write_buffer, self.write_len);
-
-//	return self.write_len;
 }
 
 void tud_hid_set_report_cb(uint8_t itf, uint8_t report_id, hid_report_type_t report_type, uint8_t const *buffer, uint16_t len)
@@ -134,35 +118,11 @@ void tud_hid_set_report_cb(uint8_t itf, uint8_t report_id, hid_report_type_t rep
 	(void)report_type;
 	(void)buffer;
 	(void)len;
-
-//	if (itf != USB_ITF_HID_GENERIC)
-//		return;
-
-//	printf("%s: itf: %d, report id: %d, type: %d, buff: %02X %02X %02X len: %d\r\n", __func__, itf, report_id, report_type, buffer[0], buffer[1], buffer[2], len);
-
-//	if (len < 1)
-//		return;
-
-//	const bool is_write = (buffer[0] & PACKET_WRITE_MASK);
-//	const uint8_t reg = (buffer[0] & ~PACKET_WRITE_MASK);
-
-//	printf("%s: read complete, is_write: %d, reg: 0x%02X\r\n", __func__, is_write, reg);
-
-//	if (is_write && (len < 2))
-//		return;
-
-//	printf("%s: data: 0x%02X\r\n", __func__, buffer[1]);
-
-//	reg_process_packet(buffer[0], buffer[1], (uint8_t*)&self.write_buffer, &self.write_len);
-
-//	printf("%s: write_buff: %02X %02X, len: %d\r\n", __func__, self.write_buffer[0], self.write_buffer[1], self.write_len);
-
-//	tud_hid_n_report(itf, report_id, self.write_buffer, self.write_len);
 }
 
 void tud_vendor_rx_cb(uint8_t itf)
 {
-	printf("%s: itf: %d, avail: %d\r\n", __func__, itf, tud_vendor_n_available(itf));
+//	printf("%s: itf: %d, avail: %d\r\n", __func__, itf, tud_vendor_n_available(itf));
 
 	uint8_t buff[64] = { 0 };
 	tud_vendor_n_read(itf, buff, 64);
@@ -171,6 +131,17 @@ void tud_vendor_rx_cb(uint8_t itf)
 	reg_process_packet(buff[0], buff[1], self.write_buffer, &self.write_len);
 
 	tud_vendor_n_write(itf, self.write_buffer, self.write_len);
+}
+
+void tud_mount_cb(void)
+{
+	// Send mods over USB by default if USB connected
+	reg_set_value(REG_ID_CFG, reg_get_value(REG_ID_CFG) | CFG_REPORT_MODS);
+}
+
+mutex_t *usb_get_mutex(void)
+{
+	return &self.mutex;
 }
 
 void usb_init(void)
@@ -187,9 +158,4 @@ void usb_init(void)
 
 	mutex_init(&self.mutex);
 	add_alarm_in_us(USB_TASK_INTERVAL_US, timer_task, NULL, true);
-}
-
-mutex_t *usb_get_mutex(void)
-{
-	return &self.mutex;
 }

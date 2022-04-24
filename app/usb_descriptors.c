@@ -1,6 +1,6 @@
 #include <tusb.h>
 
-#define CONFIG_TOTAL_LEN		(TUD_CONFIG_DESC_LEN + TUD_HID_DESC_LEN + TUD_HID_DESC_LEN /*+ TUD_HID_DESC_LEN*/ + TUD_VENDOR_DESC_LEN + TUD_CDC_DESC_LEN)
+#define CONFIG_TOTAL_LEN		(TUD_CONFIG_DESC_LEN + TUD_HID_DESC_LEN + TUD_HID_DESC_LEN + TUD_VENDOR_DESC_LEN + TUD_CDC_DESC_LEN)
 
 #define EPNUM_HID_KEYBOARD		0x81
 #define EPNUM_HID_MOUSE			0x82
@@ -61,19 +61,12 @@ uint8_t const hid_mouse_descriptor[] =
 	TUD_HID_REPORT_DESC_MOUSE()
 };
 
-//uint8_t const hid_generic_descriptor[] =
-//{
-//	TUD_HID_REPORT_DESC_GENERIC_INOUT(CFG_TUD_HID_EP_BUFSIZE)
-//};
-
 uint8_t const config_descriptor[] =
 {
 	TUD_CONFIG_DESCRIPTOR(1, USB_ITF_MAX, 0, CONFIG_TOTAL_LEN, TUSB_DESC_CONFIG_ATT_REMOTE_WAKEUP, 100),
 
 	TUD_HID_DESCRIPTOR(USB_ITF_KEYBOARD,    4, HID_ITF_PROTOCOL_NONE, sizeof(hid_keyboard_descriptor), EPNUM_HID_KEYBOARD, CFG_TUD_HID_EP_BUFSIZE, 10),
 	TUD_HID_DESCRIPTOR(USB_ITF_MOUSE,       5, HID_ITF_PROTOCOL_NONE, sizeof(hid_mouse_descriptor),    EPNUM_HID_MOUSE,    CFG_TUD_HID_EP_BUFSIZE, 10),
-
-//	TUD_HID_DESCRIPTOR(USB_ITF_HID_GENERIC, 6, HID_ITF_PROTOCOL_NONE, sizeof(hid_generic_descriptor),  EPNUM_HID_GENERIC,  CFG_TUD_HID_EP_BUFSIZE, 10),
 
 	TUD_VENDOR_DESCRIPTOR(USB_ITF_VENDOR,   7, EPNUM_VENDOR_OUT, EPNUM_VENDOR_IN, CFG_TUD_VENDOR_EPSIZE),
 
@@ -92,9 +85,6 @@ uint8_t const *tud_hid_descriptor_report_cb(uint8_t itf)
 
 	if (itf == USB_ITF_MOUSE)
 		return hid_mouse_descriptor;
-
-//	if (itf == USB_ITF_HID_GENERIC)
-//		return hid_generic_descriptor;
 
 	return NULL;
 }

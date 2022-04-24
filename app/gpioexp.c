@@ -222,12 +222,6 @@ uint8_t gpioexp_get_value(void)
 #define GET_VALUE(bit) \
 	value |= (gpio_get(PIN_GPIOEXP ## bit) << bit);
 
-//	if (reg_is_bit_set(REG_ID_DIR, (1 << bit)) == DIR_INPUT) { \
-//		value |= (port_pin_get_input_level(PIN_GPIOEXP ## bit) << bit); \
-//	} else { \
-//		value |= (port_pin_get_output_level(PIN_GPIOEXP ## bit) << bit); \
-//	}
-
 #ifdef PIN_GPIOEXP0
 	GET_VALUE(0)
 #endif

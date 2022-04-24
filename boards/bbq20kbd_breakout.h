@@ -1,7 +1,7 @@
 #pragma once
 
-#define USB_PID				0x4009
-#define USB_VID				0xABBA
+#define USB_VID				0x1209
+#define USB_PID				0xB182
 #define USB_PRODUCT			"BBQ20KBD"
 
 #define PIN_INT				0
@@ -50,5 +50,3 @@
 
 #define PICO_DEFAULT_UART			1
 #define PICO_DEFAULT_UART_TX_PIN	20
-
-//{ MP_ROM_QSTR(MP_QSTR_MIC), MP_ROM_PTR(&pin_GPIO27) },
