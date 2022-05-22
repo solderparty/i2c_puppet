@@ -34,7 +34,7 @@ See the `boards` directory for a list of available boards.
 You can configure the software over USB in a similar way you would do it over I2C. You can access the same registers (like the backlight register) using the USB Vendor Class.
 If you don't want to prefix all config interactions with `sudo`, you can copy the included udev rule:
 
-    sudo cp tools/99-i2c_puppet.rules /lib/udev/rules.d/
+    sudo cp etc/99-i2c_puppet.rules /lib/udev/rules.d/
     sudo udevadm control --reload
     sudo udevadm trigger
 
