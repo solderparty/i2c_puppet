@@ -1,0 +1,45 @@
+name: Build
+
+on: [push, pull_request]
+
+jobs:
+    build:
+        name: Building
+        runs-on: ubuntu-latest
+        strategy:
+            fail-fast: false
+
+        steps:
+            - name: Setup cmake
+              uses: jwlawson/actions-setup-cmake@v1.12
+
+            - name: Setup arm-none-eabi-gcc
+              uses: fiam/arm-none-eabi-gcc@v1
+              with:
+                release: '10-2020-q4'
+
+            - name: Clone repo
+              uses: actions/checkout@v2
+              with:
+                ref: ${{ github.event.client_payload.branch }}
+
+            - name: Get short sha1
+              id: short_sha1
+              run: echo "::set-output name=value::$(git rev-parse --short HEAD)"
+
+            - name: Build
+              run: |
+                    mkdir build output
+                    git submodule update --init
+                    cd 3rdparty/pico-sdk
+                    git submodule update --init
+                    cd ../../build
+                    cmake -DPICO_BOARD=bbq20kbd_breakout -DCMAKE_BUILD_TYPE=Debug ..
+                    make
+                    cp app/i2c_puppet.{bin,elf,uf2} ../output
+
+            - name: Upload package artifact
+              uses: actions/upload-artifact@v1
+              with:
+                path: output
+                name: i2c_puppet-bbq20kbd_breakout-${{ steps.short_sha1.outputs.value }}
