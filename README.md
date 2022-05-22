@@ -192,7 +192,7 @@ When a pin is configured as output, its bit in this register has no effect.
 
 Default value: `0xFF` (all pulls set to pull-up, if enabled in `REG_PUE` and set to input in `REG_DIR`)
 
-## GPIO value register (REG_GIO = 0x0E)
+### GPIO value register (REG_GIO = 0x0E)
 
 This register contains the values of the GPIO Expander pins, each bit corresponding to one pin. It is 1 byte in size.
 
@@ -228,9 +228,9 @@ After reading the register, it has to manually be reset to `0x00`.
 
 Default value: `0x00`
 
-### (REG_HLD = 0x11)
+### Key hold threshold configuration (REG_HLD = 0x11)
 
-Key hold threshold configuration. This register can be read and written to, it is 1 byte in size.
+This register can be read and written to, it is 1 byte in size.
 
 The value of this register (expressed in units of 10ms) is used to determine if a "press and hold" state should be entered.
 
@@ -238,7 +238,7 @@ If a key is held down longer than the value, it enters the "press and hold" stat
 
 Default value: 30 (300ms)
 
-### (REG_ADR = 0x12)
+### Device I2C address (REG_ADR = 0x12)
 
 The address that the device shows up on the I2C bus under. This register can be read and written to, it is 1 byte in size.
 
@@ -248,7 +248,7 @@ The address is not saved after a reset.
 
 Default value: `0x1F`
 
-### (REG_IND = 0x13)
+### Interrupt duration (REG_IND = 0x13)
 
 The value of this register determines how long the INT/IRQ pin is held LOW after an interrupt event happens.This register can be read and written to, it is 1 byte in size.
 
@@ -256,7 +256,7 @@ The value of this register is expressed in ms.
 
 Default value: 1 (1ms)
 
-### (REG_CF2 = 0x14)
+### The configuration register 2 (REG_CF2 = 0x14)
 
 This register can be read and written to, it's 1 byte in size.
 
@@ -277,7 +277,7 @@ See `REG_CFG` for additional settings.
 
 Default value: `CF2_TOUCH_INT | CF2_USB_KEYB_ON | CF2_USB_MOUSE_ON`
 
-### (REG_TOX = 0x15)
+### Trackpad X Position(REG_TOX = 0x15)
 
 This is a read-only register, it is 1 byte in size.
 
@@ -291,7 +291,7 @@ It is recommended to read the value of this register often, or data loss might o
 
 Default value: 0
 
-### (REG_TOY = 0x16)
+### Trackpad Y position (REG_TOY = 0x16)
 
 This is a read-only register, it is 1 byte in size.
 
