@@ -47,6 +47,13 @@ static int64_t timer_task(alarm_id_t id, void *user_data)
 
 static void key_cb(char key, enum key_state state)
 {
+	// Don't send mods over USB
+	if ((key == KEY_MOD_SHL) ||
+		(key == KEY_MOD_SHR) ||
+		(key == KEY_MOD_ALT) ||
+		(key == KEY_MOD_SYM))
+		return;
+
 	if (tud_hid_n_ready(USB_ITF_KEYBOARD) && reg_is_bit_set(REG_ID_CF2, CF2_USB_KEYB_ON)) {
 		uint8_t conv_table[128][2]		= { HID_ASCII_TO_KEYCODE };
 		conv_table['\n'][1]				= HID_KEY_ENTER; // Fixup: Enter instead of Return
