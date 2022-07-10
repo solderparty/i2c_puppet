@@ -29,6 +29,11 @@ See the `boards` directory for a list of available boards.
     cmake -DPICO_BOARD=bbq20kbd_breakout -DCMAKE_BUILD_TYPE=Debug ..
     make
 
+## Docker build
+
+If you don't have the dependencies for building this project on your system you can also use a script that will run the build command using docker.
+ The `dbuild.sh` script will invoke the commands from the `Build` section using the `djflix/rpi-pico-builder:latest` Docker image. 
+
 ## Vendor USB Class
 
 You can configure the software over USB in a similar way you would do it over I2C. You can access the same registers (like the backlight register) using the USB Vendor Class.
