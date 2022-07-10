@@ -305,6 +305,25 @@ It is recommended to read the value of this register often, or data loss might o
 
 Default value: 0
 
+### Backlight dimming timeout (REG_ID_BK3 = 0x17)
+
+This is a read-write register, it is 1 byte in size.
+
+The value of this register (expressed in units of 500ms) is used to determine when the backlight should be dimmed.
+
+Set to 0 to disable backlight dimming entirely. 
+
+Default value: 0
+
+### Backlight dimming level (REG_ID_BK4 = 0x18)
+
+This is a read-write register, it is 1 byte in size.
+
+The value of this register is used to determine the backlight level when it is the dimmed state. This value has no effect if REG_ID_BK3 is set to 0.
+
+Default value: 96
+
+
 ## Version history
 
 	v1.0:
