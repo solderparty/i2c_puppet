@@ -48,6 +48,7 @@ Here are libraries that allow I2C interaction with the boards running this softw
 - [Arduino](https://github.com/solderparty/arduino_bbq10kbd)
 - [CircuitPython](https://github.com/solderparty/arturo182_CircuitPython_BBQ10Keyboard)
 - [Rust (Embedded-HAL)](https://crates.io/crates/bbq10kbd)
+- [Feature-rich Linux Driver](https://github.com/wallComputer/bbqX0kbd_driver/)
 - [Linux Kernel Module](https://github.com/billylindeman/bbq10kbd-kernel-driver)
 
 ## Protocol
