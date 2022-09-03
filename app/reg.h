@@ -27,6 +27,8 @@ enum reg_id
 	REG_ID_CF2 = 0x14, // config 2
 	REG_ID_TOX = 0x15, // touch delta x since last read, at most (-128 to 127)
 	REG_ID_TOY = 0x16, // touch delta y since last read, at most (-128 to 127)
+	REG_ID_BK3 = 0x17, // Backlight dimming delay (0 = no dimming, 1 = 500ms, 2 = 1000ms, etc.)
+	REG_ID_BK4 = 0x18, // Backlight dimming level
 
 	REG_ID_LAST,
 };

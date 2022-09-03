@@ -49,6 +49,8 @@ void reg_process_packet(uint8_t in_reg, uint8_t in_data, uint8_t *out_buffer, ui
 	case REG_ID_FRQ:
 	case REG_ID_BKL:
 	case REG_ID_BK2:
+	case REG_ID_BK3:
+	case REG_ID_BK4:
 	case REG_ID_GIC:
 	case REG_ID_GIN:
 	case REG_ID_HLD:
@@ -200,6 +202,8 @@ void reg_init(void)
 	reg_set_value(REG_ID_ADR, 0x1F);
 	reg_set_value(REG_ID_IND, 1);	// ms
 	reg_set_value(REG_ID_CF2, CF2_TOUCH_INT | CF2_USB_KEYB_ON | CF2_USB_MOUSE_ON);
+	reg_set_value(REG_ID_BK3, 0); // 500ms units, 0 = no dimming timeout (don't dim)
+	reg_set_value(REG_ID_BK4, 96); 
 
 	touchpad_add_touch_callback(&touch_callback);
 }
