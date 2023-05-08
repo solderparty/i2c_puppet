@@ -18,6 +18,7 @@ enum key_mod
 	KEY_MOD_ID_ALT,
 	KEY_MOD_ID_SHL,
 	KEY_MOD_ID_SHR,
+	KEY_MOD_ID_CTRL,
 
 	KEY_MOD_ID_LAST,
 };
@@ -40,10 +41,11 @@ enum key_mod
 #define KEY_MOD_SHL		0x1B // Left Shift
 #define KEY_MOD_SHR		0x1C // Right Shift
 #define KEY_MOD_SYM		0x1D
+#define KEY_MOD_CTRL	0x1E
 
 struct key_callback
 {
-	void (*func)(char, enum key_state);
+	void (*func)(char, enum key_state, uint32_t mods);
 	struct key_callback *next;
 };
 
@@ -65,3 +67,4 @@ bool keyboard_get_capslock(void);
 bool keyboard_get_numlock(void);
 
 void keyboard_init(void);
+

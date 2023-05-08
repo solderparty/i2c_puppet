@@ -22,8 +22,6 @@ static struct
 	uint8_t write_len;
 } self;
 
-// TODO: What about Ctrl?
-// TODO: What should L1, L2, R1, R2 do
 // TODO: Should touch send arrow keys as an option?
 
 static void low_priority_worker_irq(void)
@@ -45,13 +43,14 @@ static int64_t timer_task(alarm_id_t id, void *user_data)
 	return USB_TASK_INTERVAL_US;
 }
 
-static void key_cb(char key, enum key_state state)
+static void key_cb(char key, enum key_state state, uint32_t mods)
 {
 	// Don't send mods over USB
 	if ((key == KEY_MOD_SHL) ||
 		(key == KEY_MOD_SHR) ||
 		(key == KEY_MOD_ALT) ||
-		(key == KEY_MOD_SYM))
+		(key == KEY_MOD_SYM) ||
+		(key == KEY_MOD_CTRL))
 		return;
 
 	if (tud_hid_n_ready(USB_ITF_KEYBOARD) && reg_is_bit_set(REG_ID_CF2, CF2_USB_KEYB_ON)) {
@@ -68,6 +67,9 @@ static void key_cb(char key, enum key_state state)
 		if (state == KEY_STATE_PRESSED) {
 			if (conv_table[(int)key][0])
 				modifier = KEYBOARD_MODIFIER_LEFTSHIFT;
+
+			if (mods & (1 << KEY_MOD_ID_CTRL))
+				modifier |= KEYBOARD_MODIFIER_LEFTCTRL;
 
 			keycode[0] = conv_table[(int)key][1];
 		}

@@ -15,9 +15,9 @@
 
 #define PICO_STDIO_USB_STDOUT_TIMEOUT_US 500000
 
-static void key_cb(char key, enum key_state state)
+static void key_cb(char key, enum key_state state, uint32_t mods)
 {
-	printf("key: 0x%02X/%d/%c, state: %d\r\n", key, key, key, state);
+	printf("key: 0x%02X/%d/%c, state: %d, mods: 0x%08X\r\n", key, key, key, state, mods);
 }
 static struct key_callback key_callback = { .func = key_cb };
 

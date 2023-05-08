@@ -8,7 +8,7 @@
 
 #include <pico/stdlib.h>
 
-static void key_cb(char key, enum key_state state)
+static void key_cb(char key, enum key_state state, uint32_t mods)
 {
 	(void)key;
 	(void)state;

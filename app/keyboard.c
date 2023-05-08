@@ -38,19 +38,19 @@ static const uint8_t col_pins[NUM_OF_COLS] =
 
 static const struct entry kbd_entries[][NUM_OF_COLS] =
 {
-	{ { KEY_JOY_CENTER },  { 'W', '1' },              { 'G', '/' },              { 'S', '4' },              { 'L', '"'  },  { 'H' , ':' } },
-	{ { },                 { 'Q', '#' },              { 'R', '3' },              { 'E', '2' },              { 'O', '+'  },  { 'U', '_'  } },
-	{ { KEY_BTN_LEFT1 },   { '~', '0' },              { 'F', '6' },              { .mod = KEY_MOD_ID_SHL }, { 'K', '\''  }, { 'J', ';'  } },
-	{ { },                 { ' ', '\t' },             { 'C', '9' },              { 'Z', '7' },              { 'M', '.'  },  { 'N', ','  } },
-	{ { KEY_BTN_LEFT2 },   { .mod = KEY_MOD_ID_SYM }, { 'T', '(' },              { 'D', '5' },              { 'I', '-'  },  { 'Y', ')'  } },
-	{ { KEY_BTN_RIGHT1 },  { .mod = KEY_MOD_ID_ALT }, { 'V', '?' },              { 'X', '8' },              { '$', '`'  },  { 'B', '!'  } },
-	{ { },                 { 'A', '*' },              { .mod = KEY_MOD_ID_SHR }, { 'P', '@' },              { '\b' },       { '\n', '|' } },
+	{ { KEY_JOY_CENTER },           { 'W', '1' },              { 'G', '/' },              { 'S', '4' },              { 'L', '"'  },  { 'H' , ':' } },
+	{ { },                          { 'Q', '#' },              { 'R', '3' },              { 'E', '2' },              { 'O', '+'  },  { 'U', '_'  } },
+	{ { .mod = KEY_MOD_ID_CTRL },   { '~', '0' },              { 'F', '6' },              { .mod = KEY_MOD_ID_SHL }, { 'K', '\''  }, { 'J', ';'  } },
+	{ { },                          { ' ', '\t' },             { 'C', '9' },              { 'Z', '7' },              { 'M', '.'  },  { 'N', ','  } },
+	{ { '[', '{' },                 { .mod = KEY_MOD_ID_SYM }, { 'T', '(' },              { 'D', '5' },              { 'I', '-'  },  { 'Y', ')'  } },
+	{ { ']', '}' },                 { .mod = KEY_MOD_ID_ALT }, { 'V', '?' },              { 'X', '8' },              { '$', '`'  },  { 'B', '!'  } },
+	{ { },                          { 'A', '*' },              { .mod = KEY_MOD_ID_SHR }, { 'P', '@' },              { '\b' },       { '\n', '|' } },
 };
 
 #if NUM_OF_BTNS > 0
 static const struct entry btn_entries[NUM_OF_BTNS] =
 {
-	BTN_KEYS
+	{ '=', '%' }
 };
 
 static const uint8_t btn_pins[NUM_OF_BTNS] =
@@ -109,11 +109,17 @@ static void transition_to(struct list_item * const p_item, const enum key_state 
 					key = KEY_MOD_SYM;
 				break;
 
+			case KEY_MOD_ID_CTRL:
+				if (reg_is_bit_set(REG_ID_CFG, CFG_REPORT_MODS))
+					key = KEY_MOD_CTRL;
+				break;
+
 			default:
 			{
 				if (reg_is_bit_set(REG_ID_CFG, CFG_USE_MODS)) {
 					const bool shift = (self.mods[KEY_MOD_ID_SHL] || self.mods[KEY_MOD_ID_SHR]) | self.capslock;
 					const bool alt = self.mods[KEY_MOD_ID_ALT] | self.numlock;
+					const bool ctrl = self.mods[KEY_MOD_ID_CTRL];
 					const bool is_button = (key <= KEY_BTN_RIGHT1) || ((key >= KEY_BTN_LEFT2) && (key <= KEY_BTN_RIGHT2));
 
 					if (alt && !is_button) {
@@ -130,8 +136,9 @@ static void transition_to(struct list_item * const p_item, const enum key_state 
 		p_item->effective_key = key;
 	}
 
-	if (p_item->effective_key == '\0')
+	if (p_item->effective_key == '\0') {
 		return;
+	}
 
 	keyboard_inject_event(p_item->effective_key, next_state);
 }
@@ -309,9 +316,13 @@ void keyboard_inject_event(char key, enum key_state state)
 			fifo_enqueue_force(item);
 	}
 
+	uint32_t mods = 0;
+	for (size_t i = 0; i < KEY_MOD_ID_LAST; ++i)
+		mods |= (self.mods[i] << i);
+
 	struct key_callback *cb = self.key_callbacks;
 	while (cb) {
-		cb->func(key, state);
+		cb->func(key, state, mods);
 
 		cb = cb->next;
 	}
