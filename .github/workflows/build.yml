@@ -42,4 +42,4 @@ jobs:
               uses: actions/upload-artifact@v1
               with:
                 path: output
-                name: i2c_puppet-bbq20kbd_breakout-${{ steps.short_sha1.outputs.value }}
+                name: bbq20i2c_puppet-bbq20kbd_breakout-${{ steps.short_sha1.outputs.value }}
