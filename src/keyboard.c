@@ -1,9 +1,11 @@
 #include "app_config.h"
 #include "fifo.h"
 #include "keyboard.h"
+#include "platform.h"
 #include "reg.h"
+#include "variant.h"
 
-#include <pico/stdlib.h>
+#include <stdlib.h>
 
 #define LIST_SIZE	10 // size of the list keeping track of all the pressed keys
 
@@ -23,12 +25,12 @@ struct list_item
 	char effective_key;
 };
 
-static const uint8_t row_pins[NUM_OF_ROWS] =
+static const uint32_t row_pins[NUM_OF_ROWS] =
 {
 	PINS_ROWS
 };
 
-static const uint8_t col_pins[NUM_OF_COLS] =
+static const uint32_t col_pins[NUM_OF_COLS] =
 {
 	PINS_COLS
 };
@@ -36,6 +38,7 @@ static const uint8_t col_pins[NUM_OF_COLS] =
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wmissing-field-initializers"
 
+// TODO: Move to separate folder/file
 static const struct entry kbd_entries[][NUM_OF_COLS] =
 {
 	{ { KEY_JOY_CENTER },  { 'W', '1' },              { 'G', '/' },              { 'S', '4' },              { 'L', '"'  },  { 'H' , ':' } },
@@ -52,12 +55,14 @@ static const struct entry btn_entries[NUM_OF_BTNS] =
 {
 	BTN_KEYS
 };
-
-static const uint8_t btn_pins[NUM_OF_BTNS] =
-{
-	PINS_BTNS
-};
 #endif
+
+static const uint32_t btn_pins[NUM_OF_BTNS] =
+{
+#if NUM_OF_BTNS > 0
+	PINS_BTNS
+#endif
+};
 
 #pragma GCC diagnostic pop
 
@@ -180,12 +185,12 @@ static void next_item_state(struct list_item * const p_item, const bool pressed)
 
 				transition_to(p_item, KEY_STATE_PRESSED);
 
-				p_item->hold_start_time = to_ms_since_boot(get_absolute_time());
+				p_item->hold_start_time = platform_millis();
 			}
 			break;
 
 		case KEY_STATE_PRESSED:
-			if ((to_ms_since_boot(get_absolute_time()) - p_item->hold_start_time) > (reg_get_value(REG_ID_HLD) * 10)) {
+			if ((platform_millis() - p_item->hold_start_time) > (reg_get_value(REG_ID_HLD) * 10)) {
 				transition_to(p_item, KEY_STATE_HOLD);
 			 } else if(!pressed) {
 				transition_to(p_item, KEY_STATE_RELEASED);
@@ -210,18 +215,15 @@ static void next_item_state(struct list_item * const p_item, const bool pressed)
 	}
 }
 
-static int64_t timer_task(alarm_id_t id, void *user_data)
+static int32_t keyboard_task(void *context)
 {
-	(void)id;
-	(void)user_data;
+	(void)context;
 
 	for (uint32_t c = 0; c < NUM_OF_COLS; ++c) {
-		gpio_pull_up(col_pins[c]);
-		gpio_put(col_pins[c], 0);
-		gpio_set_dir(col_pins[c], GPIO_OUT);
+		platform_keyboard_set_col(col_pins[c]);
 
 		for (uint32_t r = 0; r < NUM_OF_ROWS; ++r) {
-			const bool pressed = (gpio_get(row_pins[r]) == 0);
+			const bool pressed = (platform_gpio_get(row_pins[r]) == 0);
 			const int32_t key_idx = (int32_t)((r * NUM_OF_COLS) + c);
 
 			int32_t list_idx = -1;
@@ -254,14 +256,12 @@ static int64_t timer_task(alarm_id_t id, void *user_data)
 			}
 		}
 
-		gpio_put(col_pins[c], 1);
-		gpio_disable_pulls(col_pins[c]);
-		gpio_set_dir(col_pins[c], GPIO_IN);
+		platform_keyboard_clear_col(col_pins[c]);
 	}
 
 #if NUM_OF_BTNS > 0
 	for (uint32_t b = 0; b < NUM_OF_BTNS; ++b) {
-		const bool pressed = (gpio_get(btn_pins[b]) == 0);
+		const bool pressed = (platform_gpio_get(btn_pins[b]) == 0);
 
 		int32_t list_idx = -1;
 		for (int32_t i = 0; i < LIST_SIZE; ++i) {
@@ -294,9 +294,9 @@ static int64_t timer_task(alarm_id_t id, void *user_data)
 	}
 #endif
 
-	// negative value means interval since last alarm time
-	return -(reg_get_value(REG_ID_FRQ) * 1000);
+	return -reg_get_value(REG_ID_FRQ);
 }
+static struct platform_scheduled_callback keyboard_task_callback = { .func = keyboard_task };
 
 void keyboard_inject_event(char key, enum key_state state)
 {
@@ -389,27 +389,7 @@ void keyboard_init(void)
 	for (int i = 0; i < KEY_MOD_ID_LAST; ++i)
 		self.mods[i] = false;
 
-	// rows
-	for (uint32_t i = 0; i < NUM_OF_ROWS; ++i) {
-		gpio_init(row_pins[i]);
-		gpio_pull_up(row_pins[i]);
-		gpio_set_dir(row_pins[i], GPIO_IN);
-	}
+	platform_keyboard_init(row_pins, NUM_OF_ROWS, col_pins, NUM_OF_COLS, btn_pins, NUM_OF_BTNS);
 
-	// cols
-	for(uint32_t i = 0; i < NUM_OF_COLS; ++i) {
-		gpio_init(col_pins[i]);
-		gpio_set_dir(col_pins[i], GPIO_IN);
-	}
-
-	// btns
-#if NUM_OF_BTNS > 0
-	for(uint32_t i = 0; i < NUM_OF_BTNS; ++i) {
-		gpio_init(btn_pins[i]);
-		gpio_pull_up(btn_pins[i]);
-		gpio_set_dir(btn_pins[i], GPIO_IN);
-	}
-#endif
-
-	add_alarm_in_ms(reg_get_value(REG_ID_FRQ), timer_task, NULL, true);
+	platform_schedule_callback(reg_get_value(REG_ID_FRQ), &keyboard_task_callback, NULL);
 }

@@ -1,3 +1,4 @@
 build
 *.txt.user
+.vscode
 __pycache__

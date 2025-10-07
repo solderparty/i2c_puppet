@@ -43,13 +43,13 @@ enum key_mod
 
 struct key_callback
 {
-	void (*func)(char, enum key_state);
+	void (*func)(char key, enum key_state state);
 	struct key_callback *next;
 };
 
 struct key_lock_callback
 {
-	void (*func)(bool, bool);
+	void (*func)(bool capslock, bool numlock);
 	struct key_lock_callback *next;
 };
 

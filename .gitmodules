@@ -1,3 +1,0 @@
-[submodule "3rdparty/pico-sdk"]
-	path = 3rdparty/pico-sdk
-	url = https://github.com/raspberrypi/pico-sdk.git

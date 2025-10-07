@@ -1,5 +1,6 @@
-#include "app_config.h"
 #include "fifo.h"
+
+#include "app_config.h"
 
 static struct
 {

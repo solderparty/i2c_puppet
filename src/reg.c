@@ -4,12 +4,12 @@
 #include "backlight.h"
 #include "fifo.h"
 #include "gpioexp.h"
+#include "platform.h"
 #include "puppet_i2c.h"
 #include "keyboard.h"
 #include "touchpad.h"
 
-#include <pico/stdlib.h>
-#include <RP2040.h> // TODO: When there's more than one RP chip, change this to be more generic
+#include <sys/param.h>
 #include <stdio.h>
 
 // We don't enable this by default cause it spams quite a lot
@@ -146,7 +146,7 @@ void reg_process_packet(uint8_t in_reg, uint8_t in_data, uint8_t *out_buffer, ui
 	}
 
 	case REG_ID_RST:
-		NVIC_SystemReset();
+		platform_reset();
 		break;
 	}
 }

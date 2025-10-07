@@ -1,0 +1,24 @@
+{
+  "build": {
+    "core": "rp2040",
+    "f_cpu": "133000000L",
+    "hwids": [
+      [ "0x2E8A", "0x00C0" ]
+    ],
+    "mcu": "rp2040",
+    "variant": "rpipico"
+  },
+  "debug": {
+    "jlink_device": "RP2040_M0_0",
+    "openocd_target": "rp2040.cfg",
+    "svd_path": "rp2040.svd"
+  },
+  "frameworks": [ "Pico-SDK-CMAKE" ],
+  "name": "BBQ20KBD",
+  "upload": {
+    "maximum_ram_size": 262144,
+    "maximum_size": 2097152
+  },
+  "url": "https://bbq20kbd.solder.party/",
+  "vendor": "Solder Party"
+}

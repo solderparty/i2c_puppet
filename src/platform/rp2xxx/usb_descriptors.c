@@ -1,3 +1,5 @@
+#ifdef PICO_BUILD
+
 #include <tusb.h>
 
 #define CONFIG_TOTAL_LEN		(TUD_CONFIG_DESC_LEN + TUD_HID_DESC_LEN + TUD_HID_DESC_LEN + TUD_VENDOR_DESC_LEN + TUD_CDC_DESC_LEN)
@@ -122,3 +124,5 @@ uint16_t const *tud_descriptor_string_cb(uint8_t idx, uint16_t langid)
 
 	return temp_string;
 }
+
+#endif

@@ -3,10 +3,10 @@
 #include "app_config.h"
 #include "gpioexp.h"
 #include "keyboard.h"
+#include "platform.h"
 #include "reg.h"
 #include "touchpad.h"
-
-#include <pico/stdlib.h>
+#include "variant.h"
 
 static void key_cb(char key, enum key_state state)
 {
@@ -18,9 +18,9 @@ static void key_cb(char key, enum key_state state)
 
 	reg_set_bit(REG_ID_INT, INT_KEY);
 
-	gpio_put(PIN_INT, 0);
-	busy_wait_ms(reg_get_value(REG_ID_IND));
-	gpio_put(PIN_INT, 1);
+	platform_gpio_set(PIN_INT, 0);
+	platform_sleep_ms(reg_get_value(REG_ID_IND));
+	platform_gpio_set(PIN_INT, 1);
 }
 static struct key_callback key_callback = { .func = key_cb };
 
@@ -39,9 +39,9 @@ static void key_lock_cb(bool caps_changed, bool num_changed)
 	}
 
 	if (do_int) {
-		gpio_put(PIN_INT, 0);
-		busy_wait_ms(reg_get_value(REG_ID_IND));
-		gpio_put(PIN_INT, 1);
+		platform_gpio_set(PIN_INT, 0);
+		platform_sleep_ms(reg_get_value(REG_ID_IND));
+		platform_gpio_set(PIN_INT, 1);
 	}
 }
 static struct key_lock_callback key_lock_callback = { .func = key_lock_cb };
@@ -56,9 +56,9 @@ static void touch_cb(int8_t x, int8_t y)
 
 	reg_set_bit(REG_ID_INT, INT_TOUCH);
 
-	gpio_put(PIN_INT, 0);
-	busy_wait_ms(reg_get_value(REG_ID_IND));
-	gpio_put(PIN_INT, 1);
+	platform_gpio_set(PIN_INT, 0);
+	platform_sleep_ms(reg_get_value(REG_ID_IND));
+	platform_gpio_set(PIN_INT, 1);
 }
 static struct touch_callback touch_callback = { .func = touch_cb };
 
@@ -72,18 +72,16 @@ static void gpioexp_cb(uint8_t gpio, uint8_t gpio_idx)
 	reg_set_bit(REG_ID_INT, INT_GPIO);
 	reg_set_bit(REG_ID_GIN, (1 << gpio_idx));
 
-	gpio_put(PIN_INT, 0);
-	busy_wait_ms(reg_get_value(REG_ID_IND));
-	gpio_put(PIN_INT, 1);
+	platform_gpio_set(PIN_INT, 0);
+	platform_sleep_ms(reg_get_value(REG_ID_IND));
+	platform_gpio_set(PIN_INT, 1);
 }
 static struct gpioexp_callback gpioexp_callback = { .func = gpioexp_cb };
 
 void interrupt_init(void)
 {
-	gpio_init(PIN_INT);
-	gpio_set_dir(PIN_INT, GPIO_OUT);
-	gpio_pull_up(PIN_INT);
-	gpio_put(PIN_INT, true);
+	platform_gpio_configure(PIN_INT, PLATFORM_GPIO_OUTPUT);
+	platform_gpio_set(PIN_INT, 1);
 
 	keyboard_add_key_callback(&key_callback);
 	keyboard_add_lock_callback(&key_lock_callback);

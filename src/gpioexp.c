@@ -1,48 +1,14 @@
 #include "gpioexp.h"
-#include "reg.h"
 
-#include <pico/stdlib.h>
-#include <stdio.h>
+#include "platform.h"
+#include "reg.h"
 
 static struct
 {
 	struct gpioexp_callback *callbacks;
 } self;
 
-static void set_dir(uint8_t gpio, uint8_t gpio_idx, uint8_t dir)
-{
-#ifndef NDEBUG
-	printf("%s: gpio: %d, gpio_idx: %d, dir: %d\r\n", __func__, gpio, gpio_idx, dir);
-#endif
-
-	gpio_init(gpio);
-
-	if (dir == DIR_INPUT) {
-		if (reg_is_bit_set(REG_ID_PUE, (1 << gpio_idx))) {
-			if (reg_is_bit_set(REG_ID_PUD, (1 << gpio_idx)) == PUD_UP) {
-				gpio_is_pulled_up(gpio);
-			} else {
-				gpio_is_pulled_down(gpio);
-			}
-		} else {
-			gpio_disable_pulls(gpio);
-		}
-
-		gpio_set_dir(gpio, GPIO_IN);
-
-		gpio_set_irq_enabled(gpio, GPIO_IRQ_EDGE_FALL | GPIO_IRQ_EDGE_RISE, true);
-
-		reg_set_bit(REG_ID_DIR, (1 << gpio_idx));
-	} else {
-		gpio_set_irq_enabled(gpio, GPIO_IRQ_EDGE_FALL | GPIO_IRQ_EDGE_RISE, false);
-
-		gpio_set_dir(gpio, GPIO_OUT);
-
-		reg_clear_bit(REG_ID_DIR, (1 << gpio_idx));
-	}
-}
-
-void gpioexp_gpio_irq(uint gpio, uint32_t events)
+static void gpio_cb(uint32_t  gpio, uint32_t events)
 {
 	(void)gpio;
 	(void)events;
@@ -89,6 +55,21 @@ void gpioexp_gpio_irq(uint gpio, uint32_t events)
 	CALLBACK(7)
 #endif
 }
+static struct platform_gpio_callback gpio_callback = { .func = gpio_cb };
+
+static void set_dir(uint32_t pin, uint8_t gpio_idx, uint8_t dir)
+{
+	const bool pue = reg_is_bit_set(REG_ID_PUE, (1 << gpio_idx));
+	const bool pud = reg_is_bit_set(REG_ID_PUD, (1 << gpio_idx));
+
+	platform_gpioexp_configure(pin, gpio_idx, dir == DIR_INPUT, pue, pud);
+
+	if (dir == DIR_INPUT) {
+		reg_set_bit(REG_ID_DIR, (1 << gpio_idx));
+	} else {
+		reg_clear_bit(REG_ID_DIR, (1 << gpio_idx));
+	}
+}
 
 void gpioexp_update_dir(uint8_t new_dir)
 {
@@ -98,7 +79,7 @@ void gpioexp_update_dir(uint8_t new_dir)
 
 	const uint8_t old_dir = reg_get_value(REG_ID_DIR);
 
-	(void)old_dir; // Shut up warning in case no GPIOs configured
+	(void)old_dir; // Silence warning in case no GPIOs configured
 
 #define UPDATE_DIR(bit) \
 	if ((old_dir & (1 << bit)) != (new_dir & (1 << bit))) \
@@ -186,7 +167,7 @@ void gpioexp_set_value(uint8_t value)
 
 #define SET_VALUE(bit) \
 	if (reg_is_bit_set(REG_ID_DIR, (1 << bit)) == DIR_OUTPUT) { \
-		gpio_put(PIN_GPIOEXP ## bit, (value & (1 << bit))); \
+		platform_gpio_set(PIN_GPIOEXP ## bit, (value & (1 << bit))); \
 	}
 
 #ifdef PIN_GPIOEXP0
@@ -220,7 +201,7 @@ uint8_t gpioexp_get_value(void)
 	uint8_t value = 0;
 
 #define GET_VALUE(bit) \
-	value |= (gpio_get(PIN_GPIOEXP ## bit) << bit);
+	value |= (platform_gpio_get(PIN_GPIOEXP ## bit) << bit);
 
 #ifdef PIN_GPIOEXP0
 	GET_VALUE(0)
@@ -270,4 +251,29 @@ void gpioexp_init(void)
 {
 	// Configure all to inputs
 	gpioexp_update_dir(0xFF);
+
+#ifdef PIN_GPIOEXP0
+	platform_gpio_attach_callback(PIN_GPIOEXP0, 0, &gpio_irq);
+#endif
+#ifdef PIN_GPIOEXP1
+	platform_gpio_attach_callback(PIN_GPIOEXP1, 0, &gpio_irq);
+#endif
+#ifdef PIN_GPIOEXP2
+	platform_gpio_attach_callback(PIN_GPIOEXP2, 0, &gpio_irq);
+#endif
+#ifdef PIN_GPIOEXP3
+	platform_gpio_attach_callback(PIN_GPIOEXP3, 0, &gpio_irq);
+#endif
+#ifdef PIN_GPIOEXP4
+	platform_gpio_attach_callback(PIN_GPIOEXP4, 0, &gpio_irq);
+#endif
+#ifdef PIN_GPIOEXP5
+	platform_gpio_attach_callback(PIN_GPIOEXP5, 0, &gpio_irq);
+#endif
+#ifdef PIN_GPIOEXP6
+	platform_gpio_attach_callback(PIN_GPIOEXP6, 0, &gpio_irq);
+#endif
+#ifdef PIN_GPIOEXP7
+	platform_gpio_attach_callback(PIN_GPIOEXP7, 0, &gpio_irq);
+#endif
 }
